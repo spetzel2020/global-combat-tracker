@@ -89,9 +89,10 @@ Hooks.on('renderCombatTracker', async (combatTracker, html) => {
   //Gather tokens in this scene that aren't themselves copies
   //"turns" are really tokens and "turn.token" is really token data
   const tokenDataInThisCombat = thisCombat.turns.map(turn => {return turn.token}).filter(td => !isCopy(td));
+  if (!tokenDataInThisCombat.length) {return;}
 
   //Now push this tokenData into other combats if not already present
-  combatsInOtherScenes?.forEach(otherCombat => {
+  for (const otherCombat of combatsInOtherScenes) {
     const otherScene = game.scenes.find(s => s._id === otherCombat.data.scene);
     console.log(otherCombat, otherScene);
 
@@ -99,7 +100,14 @@ Hooks.on('renderCombatTracker', async (combatTracker, html) => {
     tokenDataInThisCombat.forEach(td => {
       //found says it's already been copied (is there a small chance that tokenId might not be unique?? across 2 scenes)
       const found = otherCombat.turns.find(turn => (turn.tokenId === td._id))
-      if (!found) tokenDataToAdd.push(td);
+      if (!found) {
+        const tdDup = duplicate(td);  //Have to duplicate because we update it
+        if (!tdDup.flags) {tdDup.flags = {}}
+        tdDup.tokenId = td._id;
+        tdDup.flags[MODULE_NAME] = {isCopy : true}
+        tdDup.hidden = true;
+        tokenDataToAdd.push(tdDup);   
+      }
     });
 
 
@@ -107,15 +115,17 @@ Hooks.on('renderCombatTracker', async (combatTracker, html) => {
     //Note that you can't compare actor data because mean tokens can have the same actor
     if (tokenDataToAdd.length) {
       //Have to lift the toggleCombat code because a lot of it depends on having actual tokens
-      //We may need to create temporary tokens for this to work and provide actor link etc
-      const createData = tokenDataToAdd.map(td => {
-        if (!td.flags) {td.flags = {}}
-        td.flags[MODULE_NAME] = {isCopy : true}
-        return {tokenId: td._id, flags: td.flags, hidden: true}
-      });
-      otherCombat.createEmbeddedEntity("Combatant", createData, {temporary : false});
+
+      /*We may need to create temporary tokens for this to work and provide actor link etc
+      let tempTokens = await Token.create(tokenDataToAdd, {temporary: true});
+      //Unfortunately, create returns a single item if an array of length 1 was passed
+      if (!Array.isArray(tempTokens)) {tempTokens = [tempTokens];}
+*/
+      //Try passing the whole tokenData, including name and image
+      const createData = tokenDataToAdd;
+      await otherCombat.createEmbeddedEntity("Combatant", createData, {temporary : false});
     }
-  });//end foreach other combat
+  }//end for other combat
 });//end hook
 
 /*
