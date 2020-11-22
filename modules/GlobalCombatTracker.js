@@ -2,7 +2,7 @@ export const MODULE_NAME = "global-combat-tracker";
 export const MODULE_VERSION = "0.1.0";
 /*Global Combat Tracker
 21-Nov-2020   0.1.0 Created
-22-Nov-2020   0.1.0 Switch to a push model rather than pull (because otherwise we get caught in a render loop)
+22-Nov-2020   0.1.0b Switch to a push model rather than pull (because otherwise we get caught in a render loop)
 
 
 
@@ -61,62 +61,62 @@ class GlobalCombatTracker {
 Hooks.on("init", GlobalCombatTracker.init);
 Hooks.on('setup', GlobalCombatTracker.setup);
 
+function isCopy(td) {
+  //Return true only if there is a true flag entry
+//FIXME: If td is null, then also (for now) is a copy
+  return !td || (td.flags && td.flags[MODULE_NAME] && td.flags[MODULE_NAME].isCopy);
+}
 
-Hooks.on('renderCombatTracker', async (combat, html) => {
-  if (!combat || !game.user.isGM) {return;}
+Hooks.on('renderCombatTracker', async (combatTracker, html) => {
+  //NOTE: by default, the Combat Tracker instance is called "combat" , which is super confusing
+  //Its property .combat is the actual list of combatants etc
+  if (!combatTracker || !game.user.isGM) {return;}
 
-  //See whether we can retrieve other scenes CombatTrackers
   const gameCombats = game.combats;
   const viewedScene = game.scenes.viewed;
+  //There are this combat, other combats (Encounters) in THIS scene, and then combats in other scenes
   const combatsInOtherScenes = gameCombats?.entities.filter(c => c.data.scene !== viewedScene._id);
+  const thisCombat = combatTracker.combat;
 
   //Don't want to sync different encounters within the same scene
   //(unless we decide that's the way to show other scenes)
-//FIXME: Will need to be a checkbox that says "Sync with other combat trackers" - failing that will need sources and sink  
   console.log(`Combats in current scene ${viewedScene.name}:`);
   console.log(gameCombats?.entities.filter(c => c.data.scene === viewedScene._id));
+  if (!thisCombat) {return;}
+
   console.log(`Combats in other scenes:`);
 
-  let tokensInOtherCombats = new Set();    //can't add tokens directly because they are per scene - record the token data
-  combatsInOtherScenes?.forEach(c => {
-    const otherScene = game.scenes.find(s => s._id === c.data.scene);
-    console.log(c, otherScene);
-    //"turns" are really tokens and "turn.token" is really token data
-    c.turns.forEach(turn => {
-      const tokenData = turn.token;
-      tokensInOtherCombats.add(tokenData);
+  //Gather tokens in this scene that aren't themselves copies
+  //"turns" are really tokens and "turn.token" is really token data
+  const tokenDataInThisCombat = thisCombat.turns.map(turn => {return turn.token}).filter(td => !isCopy(td));
+
+  //Now push this tokenData into other combats if not already present
+  combatsInOtherScenes?.forEach(otherCombat => {
+    const otherScene = game.scenes.find(s => s._id === otherCombat.data.scene);
+    console.log(otherCombat, otherScene);
+
+    let tokenDataToAdd = [];
+    tokenDataInThisCombat.forEach(td => {
+      //found says it's already been copied (is there a small chance that tokenId might not be unique?? across 2 scenes)
+      const found = otherCombat.turns.find(turn => (turn.tokenId === td._id))
+      if (!found) tokenDataToAdd.push(td);
     });
-  });
 
-  //If this scene combat hasn't been initialized, then just do it later
-  if (!combat.combat) {return;}
 
-  //Now create temporary tokens and add them to this Combat Tracker
-  //Note that you can't compare actor data because mean tokens can have the same actor
-  let tokenDataToAdd = new Set();
-  tokensInOtherCombats.forEach(td => {
-    if (td && !(td.flags && td.flags[MODULE_NAME] && td.flags[MODULE_NAME].isCopy)) {
-      const tokenAlreadyPresent = combat.combat.turns?.find(turn => ((turn.tokenId === td._id) 
-                                                    && turn.flags && turn.flags[MODULE_NAME] && turn.flags[MODULE_NAME].isCopy));
-      if (!tokenAlreadyPresent) {
-        //Not found; add it
-        // Just copy the token data, keeping the same id and setting a flag which marks it as a copy
-    
-        const tokenDataCopy = duplicate(td);
-        if (!tokenDataCopy.flags) {tokenDataCopy.flags = {}}
-        tokenDataCopy.flags[MODULE_NAME] = {isCopy : true};
-        tokenDataToAdd.add(tokenDataCopy);
-      }
-    }//end if td not a copy itself
-  });
-  if (tokenDataToAdd.size) {
-    //Have to lift the toggleCombat code because a lot of it depends on having actual tokens
-    //We may need to create temporary tokens for this to work
-    const createData = Array.from(tokenDataToAdd).map(td => {return {tokenId: td._id, flags: td.flags, hidden: true}});
-    await combat.combat.createEmbeddedEntity("Combatant", createData, {temporary : false});
-  }
-
-});
+    //Now create temporary tokens and add them to the other Combat Tracker asynchronously
+    //Note that you can't compare actor data because mean tokens can have the same actor
+    if (tokenDataToAdd.length) {
+      //Have to lift the toggleCombat code because a lot of it depends on having actual tokens
+      //We may need to create temporary tokens for this to work and provide actor link etc
+      const createData = tokenDataToAdd.map(td => {
+        if (!td.flags) {td.flags = {}}
+        td.flags[MODULE_NAME] = {isCopy : true}
+        return {tokenId: td._id, flags: td.flags, hidden: true}
+      });
+      otherCombat.createEmbeddedEntity("Combatant", createData, {temporary : false});
+    }
+  });//end foreach other combat
+});//end hook
 
 /*
  Hooks.on('renderCombatTrackerConfig', async (ctc, html) => {

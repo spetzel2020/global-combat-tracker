@@ -1,4 +1,11 @@
 # TO DO
+- How do we indicate that a CT should be synced? 
+    - With a checkbox at the top?
+    - In the Scene: perhaps a list of Scenes where the CTs should be synced with one another
+
+
+
+
 
 ## BUGS
 
