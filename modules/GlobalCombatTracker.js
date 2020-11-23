@@ -67,66 +67,60 @@ function isCopy(td) {
   return !td || (td.flags && td.flags[MODULE_NAME] && td.flags[MODULE_NAME].isCopy);
 }
 
-Hooks.on('renderCombatTracker', async (combatTracker, html) => {
-  //NOTE: by default, the Combat Tracker instance is called "combat" , which is super confusing
-  //Its property .combat is the actual list of combatants etc
-  if (!combatTracker || !game.user.isGM) {return;}
+Hooks.on('createCombatant', async (thisCombat, combatant, options, userId) => {
+  if (!thisCombat || !combatant || !game.user.isGM || isCopy(combatant)) {return;}
 
   const gameCombats = game.combats;
   const viewedScene = game.scenes.viewed;
   //There are this combat, other combats (Encounters) in THIS scene, and then combats in other scenes
   const combatsInOtherScenes = gameCombats?.entities.filter(c => c.data.scene !== viewedScene._id);
-  const thisCombat = combatTracker.combat;
 
   //Don't want to sync different encounters within the same scene
   //(unless we decide that's the way to show other scenes)
   console.log(`Combats in current scene ${viewedScene.name}:`);
   console.log(gameCombats?.entities.filter(c => c.data.scene === viewedScene._id));
-  if (!thisCombat) {return;}
-
   console.log(`Combats in other scenes:`);
 
-  //Gather tokens in this scene that aren't themselves copies
-  //"turns" are really tokens and "turn.token" is really token data
-  const tokenDataInThisCombat = thisCombat.turns.map(turn => {return turn.token}).filter(td => !isCopy(td));
-  if (!tokenDataInThisCombat.length) {return;}
+  //Get full token data so we can include that (because the other combats won't be able to look it up)
+  const fullToken = canvas.tokens?.objects?.children?.find(t => (t.id === combatant.tokenId));
+
+  const tdDup = duplicate(fullToken.data);
+  tdDup.flags[MODULE_NAME] = {isCopy : true, sourceTokenId : combatant.tokenId}
+  tdDup.hidden = true;
 
   //Now push this tokenData into other combats if not already present
   for (const otherCombat of combatsInOtherScenes) {
     const otherScene = game.scenes.find(s => s._id === otherCombat.data.scene);
     console.log(otherCombat, otherScene);
 
-    let tokenDataToAdd = [];
-    tokenDataInThisCombat.forEach(td => {
-      //found says it's already been copied (is there a small chance that tokenId might not be unique?? across 2 scenes)
-      const found = otherCombat.turns.find(turn => (turn.tokenId === td._id))
-      if (!found) {
-        const tdDup = duplicate(td);  //Have to duplicate because we update it
-        if (!tdDup.flags) {tdDup.flags = {}}
-        tdDup.tokenId = td._id;
-        tdDup.flags[MODULE_NAME] = {isCopy : true}
-        tdDup.hidden = true;
-        tokenDataToAdd.push(tdDup);   
-      }
-    });
+    //found says it's already been copied (is there a small chance that tokenId might not be unique?? across 2 scenes)
+    const found = otherCombat.turns.find(turn => ((turn.tokenId === tdDup._id) && isCopy(turn)));
 
-
-    //Now create temporary tokens and add them to the other Combat Tracker asynchronously
-    //Note that you can't compare actor data because mean tokens can have the same actor
-    if (tokenDataToAdd.length) {
-      //Have to lift the toggleCombat code because a lot of it depends on having actual tokens
-
-      /*We may need to create temporary tokens for this to work and provide actor link etc
-      let tempTokens = await Token.create(tokenDataToAdd, {temporary: true});
-      //Unfortunately, create returns a single item if an array of length 1 was passed
-      if (!Array.isArray(tempTokens)) {tempTokens = [tempTokens];}
-*/
-      //Try passing the whole tokenData, including name and image
-      const createData = tokenDataToAdd;
-      await otherCombat.createEmbeddedEntity("Combatant", createData, {temporary : false});
-    }
+    //Have to lift the toggleCombat code because a lot of it depends on having actual tokens
+    if (!found) {await otherCombat.createCombatant(tdDup, {temporary : false});}
   }//end for other combat
 });//end hook
+
+Hooks.on("deleteCombatant", async (thisCombat, combatant, options, userId) => {
+  //For now we don't allow you to delete a combatant if it's a copy - but for a true Global Combat Tracker we will need that
+  if (!thisCombat || !combatant || !game.user.isGM  || isCopy(combatant)) {return;}
+
+  const gameCombats = game.combats;
+  const viewedScene = game.scenes.viewed;
+  //There are this combat, other combats (Encounters) in THIS scene, and then combats in other scenes
+  const combatsInOtherScenes = gameCombats?.entities.filter(c => c.data.scene !== viewedScene._id);
+
+  //Now remove this combatant from other combats if there
+  for (const otherCombat of combatsInOtherScenes) {
+    const otherScene = game.scenes.find(s => s._id === otherCombat.data.scene);
+    console.log(otherCombat, otherScene);
+
+    //found says it's already been copied 
+    const found = otherCombat.turns.find(turn => (turn.flags && (turn.flags[MODULE_NAME]?.sourceTokenId === combatant.tokenId) && isCopy(turn)));
+
+    if (found) {await otherCombat.deleteCombatant(found._id);}
+  }//end for other combat
+});
 
 /*
  Hooks.on('renderCombatTrackerConfig', async (ctc, html) => {
