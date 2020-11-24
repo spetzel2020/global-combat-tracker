@@ -1,5 +1,5 @@
 export const MODULE_NAME = "global-combat-tracker";
-export const MODULE_VERSION = "0.1.0";
+export const MODULE_VERSION = "0.2.0";
 /*Global Combat Tracker
 21-Nov-2020   0.1.0 Created
 22-Nov-2020   0.1.0b Switch to a push model rather than pull (because otherwise we get caught in a render loop)
@@ -91,8 +91,10 @@ class GlobalCombatTracker extends CombatTracker {
 
 
 
-
-Hooks.on("init", GlobalCombatTracker.init);
+//Substitute the Global Combat Tracker for the default one
+Hooks.on("init", () => {
+  CONFIG.ui.combat = GlobalCombatTracker;
+});
 Hooks.on('setup', GlobalCombatTracker.setup);
 Hooks.on('getSceneControlButtons', GlobalCombatTracker.getSceneControlButtons);
 
