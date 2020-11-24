@@ -3,13 +3,12 @@
     - With a checkbox at the top?
     - In the Scene: perhaps a list of Scenes where the CTs should be synced with one another
 
-
-
-
-
 ## BUGS
+- Change title of GCT popout to GCT or Global Combat Tracker
+    - currently if you set it you get [object Object]
 
 ## FEATURES
+
 
 
 

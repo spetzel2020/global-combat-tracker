@@ -3,25 +3,45 @@ export const MODULE_VERSION = "0.1.0";
 /*Global Combat Tracker
 21-Nov-2020   0.1.0 Created
 22-Nov-2020   0.1.0b Switch to a push model rather than pull (because otherwise we get caught in a render loop)
-
+23-Nov-2020   0.1.0d: Now we need to echo the CT actions like:
+              - roll initiative (should just copy from source for now)
+              - advance turn (should duplicate - probably using a render hook)
+23-Nov-2020   0.2.0: Switch to a new approach, bascially substituting a "Global Combat Tracker" for the standard one
+              Use the render hooks to substitute the subclass GCT              
 
 
 
 */
 
-class GlobalCombatTracker {
+class GlobalCombatTracker extends CombatTracker {
+  /** @override */
+  	initialize({combat=null, render=true}={}) {
+      //override the core behavior of only looking for a combat from the current scene if combat===null
+
+      if (combat === null) {
+        const combats = game.combats.entities ?? [];
+        combat = combats.length ? combats.find(c => c.data.active) || combats[0] : null;
+      }
+      super.initialize({combat, render});
+
+    }
+
+
+
+
+
   static init() {
       game.settings.register(MODULE_NAME, "GCTVersion", {
         name: "version",
         hint: "",
         scope: "world",
         config: false,
-        default: "0.1.0",
+        default: "0.2.0",
         type: String
       });
-      game.settings.register(MODULE_NAME, "syncCombatTrackers", {
-        name: game.i18n.localize("GCT.SETTING.Simulate.Name"),
-        hint: game.i18n.localize("GCT.SETTING.Simulate.Hint"),  //Synchronize Combat Trackers across scenes
+      game.settings.register(MODULE_NAME, "enableGCT", {
+        name: game.i18n.localize("GCT.Setting.Enable.NAME"),
+        hint: game.i18n.localize("GCT.Setting.Enable.HINT"),  //Synchronize Combat Trackers across scenes
         scope: "client",
         config: true,
         default: true,
@@ -36,31 +56,47 @@ class GlobalCombatTracker {
   }
 
 
-/*
   static getSceneControlButtons(buttons) {
-      let tokenButton = buttons.find(b => b.name == "token")
+      let tokenButton = buttons.find(b => b.name === "token")
 
       if (tokenButton && game.user.isGM) {
           tokenButton.tools.push({
               name: "simulate",
-              title: game.i18n.localize("CS5e.BUTTON.Title"),
+              title: game.i18n.localize("GCT.BasicControlsButton.TITLE"),
               icon: "fas fa-bolt",
               toggle: false,
               active: true,
               visible: game.user.isGM,
-              onClick: () => GlobalCombatTracker.openForm()
+              onClick: () => GlobalCombatTracker.createPopout()
           });
       }
   }
-  */
-}//end class GLobalCombatTracker
+
+  static createPopout() {
+    const sidebarCT = ui.combat;
+
+    //FIXME: FInd a way of checking for a previous popout
+    const pop = new GlobalCombatTracker({
+      id: `${sidebarCT.options.id}-popout`,
+      classes: sidebarCT.options.classes.concat([["sidebar-popout"]]),
+      popOut: true
+    });
+    pop._original = pop;
+
+    pop.initialize({combat: null, render: true});
+    pop.render(true);
+  }
+
+}//end class GlobalCombatTracker
 
 
 
 
 Hooks.on("init", GlobalCombatTracker.init);
 Hooks.on('setup', GlobalCombatTracker.setup);
+Hooks.on('getSceneControlButtons', GlobalCombatTracker.getSceneControlButtons);
 
+/*
 function isCopy(td) {
   //Return true only if there is a true flag entry
 //FIXME: If td is null, then also (for now) is a copy
@@ -122,7 +158,7 @@ Hooks.on("deleteCombatant", async (thisCombat, combatant, options, userId) => {
   }//end for other combat
 });
 
-/*
+
  Hooks.on('renderCombatTrackerConfig', async (ctc, html) => {
    const data = {
      combatTrackerSimulate: game.settings.get(MODULE_NAME,"combatTrackerSimulate")
