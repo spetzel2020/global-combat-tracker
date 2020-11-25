@@ -15,19 +15,28 @@ export const MODULE_VERSION = "0.2.0";
 
 class GlobalCombatTracker extends CombatTracker {
   /** @override */
-  	initialize({combat=null, render=true}={}) {
-      //override the core behavior of only looking for a combat from the current scene if combat===null
+  initialize({combat=null, render=true}={}) {
+    //override the core behavior of only looking for a combat from the current scene if combat===null
 
-      if (combat === null) {
-        const combats = game.combats.entities ?? [];
-        combat = combats.length ? combats.find(c => c.data.active) || combats[0] : null;
-      }
-      super.initialize({combat, render});
-
+    if (combat === null) {
+      const combats = game.combats.entities ?? [];
+      combat = combats.length ? combats.find(c => c.data.active) || combats[0] : null;
     }
+    super.initialize({combat, render});
+
+  }
 
 
 
+
+  /** @override */
+  static get defaultOptions() {
+    return  mergeObject(super.defaultOptions, {
+      id: "combat",
+      template: "templates/sidebar/combat-tracker.html",
+      title: "Global Combat Tracker"
+    });
+  }
 
 
   static init() {
@@ -55,7 +64,7 @@ class GlobalCombatTracker extends CombatTracker {
 
   }
 
-
+/*
   static getSceneControlButtons(buttons) {
       let tokenButton = buttons.find(b => b.name === "token")
 
@@ -86,17 +95,27 @@ class GlobalCombatTracker extends CombatTracker {
     pop.initialize({combat: null, render: true});
     pop.render(true);
   }
+  */
 
 }//end class GlobalCombatTracker
 
+class GlobalCombat extends Combat {
+
+
+
+}//end class GlobalCombat
 
 
 //Substitute the Global Combat Tracker for the default one
 Hooks.on("init", () => {
   CONFIG.ui.combat = GlobalCombatTracker;
+  CONFIG.Combat.entityClass = GlobalCombat;
 });
 Hooks.on('setup', GlobalCombatTracker.setup);
-Hooks.on('getSceneControlButtons', GlobalCombatTracker.getSceneControlButtons);
+
+
+
+//Hooks.on('getSceneControlButtons', GlobalCombatTracker.getSceneControlButtons);
 
 /*
 function isCopy(td) {
@@ -104,41 +123,27 @@ function isCopy(td) {
 //FIXME: If td is null, then also (for now) is a copy
   return !td || (td.flags && td.flags[MODULE_NAME] && td.flags[MODULE_NAME].isCopy);
 }
+*/
 
-Hooks.on('createCombatant', async (thisCombat, combatant, options, userId) => {
-  if (!thisCombat || !combatant || !game.user.isGM || isCopy(combatant)) {return;}
-
-  const gameCombats = game.combats;
-  const viewedScene = game.scenes.viewed;
-  //There are this combat, other combats (Encounters) in THIS scene, and then combats in other scenes
-  const combatsInOtherScenes = gameCombats?.entities.filter(c => c.data.scene !== viewedScene._id);
-
-  //Don't want to sync different encounters within the same scene
-  //(unless we decide that's the way to show other scenes)
-  console.log(`Combats in current scene ${viewedScene.name}:`);
-  console.log(gameCombats?.entities.filter(c => c.data.scene === viewedScene._id));
-  console.log(`Combats in other scenes:`);
-
+//When you create a new Combatant, regardless of scene, add the token to the GlobalCombat scene
+//Probably we will want to create a pseudo-scene that holds all the combined tokens
+//Or some scene-view that merges the relevant scenes
+Hooks.on('preCreateCombatant', async (thisCombat, combatant, options, userId) => {
   //Get full token data so we can include that (because the other combats won't be able to look it up)
   const fullToken = canvas.tokens?.objects?.children?.find(t => (t.id === combatant.tokenId));
 
-  const tdDup = duplicate(fullToken.data);
-  tdDup.flags[MODULE_NAME] = {isCopy : true, sourceTokenId : combatant.tokenId}
-  tdDup.hidden = true;
+  //If the token is not already in the Global Combat Scene, then add it
+  const combatScene = thisCombat.scene;
+  const foundToken = combatScene?.data.tokens?.find(st => st._id === combatant.tokenId);
+  if (!foundToken) {
+    //FIXME: Try just adding the token to the scene token list
+    //It will be the wrong position etc. 
+    combatScene.data.tokens.push(fullToken?.data);
+  }
 
-  //Now push this tokenData into other combats if not already present
-  for (const otherCombat of combatsInOtherScenes) {
-    const otherScene = game.scenes.find(s => s._id === otherCombat.data.scene);
-    console.log(otherCombat, otherScene);
-
-    //found says it's already been copied (is there a small chance that tokenId might not be unique?? across 2 scenes)
-    const found = otherCombat.turns.find(turn => ((turn.tokenId === tdDup._id) && isCopy(turn)));
-
-    //Have to lift the toggleCombat code because a lot of it depends on having actual tokens
-    if (!found) {await otherCombat.createCombatant(tdDup, {temporary : false});}
-  }//end for other combat
+  return true;
 });//end hook
-
+/*
 Hooks.on("deleteCombatant", async (thisCombat, combatant, options, userId) => {
   //For now we don't allow you to delete a combatant if it's a copy - but for a true Global Combat Tracker we will need that
   if (!thisCombat || !combatant || !game.user.isGM  || isCopy(combatant)) {return;}
