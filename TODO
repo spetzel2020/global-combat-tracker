@@ -4,8 +4,11 @@
     - In the Scene: perhaps a list of Scenes where the CTs should be synced with one another
 
 ## BUGS
-- Change title of GCT popout to GCT or Global Combat Tracker
-    - currently if you set it you get [object Object]
+- Can we hide the GCT Mirror Scene somehow (perhaps in a folder)
+- Seems to have deleted one of my Scenes
+- Setting: GCT Hint
+    - start paying attention to the Setting
+- Initialization doesn't seem right: needs to create an Encounter; right now is just adding tokens without one    
 
 ## FEATURES
 
