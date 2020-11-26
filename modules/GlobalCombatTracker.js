@@ -216,9 +216,9 @@ class GlobalCombat extends Combat {
   }
 
   /** @override */
-  delete() {
+  async delete() {
     //FIXME: If this is the last combat, also delete the pseudo Scene created (currently it's deleting it every time)
-    const mirrorScene = GlobalCombat.getMirrorScene();
+    const mirrorScene = await GlobalCombat.getMirrorScene();
     mirrorScene.delete();
     super.delete();
   }
@@ -302,58 +302,3 @@ Hooks.on("init", () => {
 
 Hooks.on('ready', GlobalCombat.ready);
 
-
-/*
-function isCopy(td) {
-  //Return true only if there is a true flag entry
-//FIXME: If td is null, then also (for now) is a copy
-  return !td || (td.flags && td.flags[MODULE_NAME] && td.flags[MODULE_NAME].isCopy);
-}
-*/
-
-/*
-Hooks.on("deleteCombatant", async (thisCombat, combatant, options, userId) => {
-  //For now we don't allow you to delete a combatant if it's a copy - but for a true Global Combat Tracker we will need that
-  if (!thisCombat || !combatant || !game.user.isGM  || isCopy(combatant)) {return;}
-
-  const gameCombats = game.combats;
-  const viewedScene = game.scenes.viewed;
-  //There are this combat, other combats (Encounters) in THIS scene, and then combats in other scenes
-  const combatsInOtherScenes = gameCombats?.entities.filter(c => c.data.scene !== viewedScene._id);
-
-  //Now remove this combatant from other combats if there
-  for (const otherCombat of combatsInOtherScenes) {
-    const otherScene = game.scenes.find(s => s._id === otherCombat.data.scene);
-    console.log(otherCombat, otherScene);
-
-    //found says it's already been copied 
-    const found = otherCombat.turns.find(turn => (turn.flags && (turn.flags[MODULE_NAME]?.sourceTokenId === combatant.tokenId) && isCopy(turn)));
-
-    if (found) {await otherCombat.deleteCombatant(found._id);}
-  }//end for other combat
-});
-
-
- Hooks.on('renderCombatTrackerConfig', async (ctc, html) => {
-   const data = {
-     combatTrackerSimulate: game.settings.get(MODULE_NAME,"combatTrackerSimulate")
-   };
-
-   const simulateCombatCheckbox = await renderTemplate(
-     'modules/combat-simulator/templates/combat-config.html',
-     data
-   );
-   //JQuery: Set the height to auto to accomodate the new option and then add the simulateCombatCheckbox before the Submit button
-   html.css({height: 'auto'}).find('button[name=submit]').before(simulateCombatCheckbox);
- });
-
- /**
-  * Save the setting when closing the combat tracker config.
-  */
- /*
- Hooks.on('closeCombatTrackerConfig', async ({form}) => {
-   let combatTrackerSimulate = form.querySelector('#combatTrackerSimulate').checked;
-   // Save the setting when closing the combat tracker setting.
-   await game.settings.set(MODULE_NAME, "combatTrackerSimulate", combatTrackerSimulate);
- });
- */
