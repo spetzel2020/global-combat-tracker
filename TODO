@@ -5,10 +5,7 @@
 
 ## BUGS
 - Can we hide the GCT Mirror Scene somehow (perhaps in a folder)
-- Seems to have deleted one of my Scenes
-- Setting: GCT Hint
-    - start paying attention to the Setting
-- Initialization doesn't seem right: needs to create an Encounter; right now is just adding tokens without one    
+- When we turn off GCT, should delete Mirror Scene and existing combats    
 
 ## FEATURES
 

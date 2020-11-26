@@ -11,7 +11,8 @@
               FIXME: Doubtful that much of this will work right now if you're not the GM
 26-Nov-2020   0.2.0e: Turn this off if Enable setting is unchecked      
               GlobalCombat.createTokenInMirrorScene(): ADDED - although shouldn't actually create a Token  
-              Not used for now because it's creating another tokenId for the inserted token rather than re-using the existing one      
+              Not used for now because it's creating another tokenId for the inserted token rather than re-using the existing one   
+              0.2.0g: Check for enable flag , otherwise revert to super-class call   
 */
 
 const GCT = {
@@ -197,9 +198,11 @@ class GlobalCombat extends Combat {
   /** @override */
   // Called by toggleCombat if it doesn't find an existing combat
   static async create(data, options={}) {
-    //Intercept Combat.create() to substitute the Mirror Scene
-    const mirrorScene = await GlobalCombat.getMirrorScene();
-    mergeObject(data, {scene: mirrorScene._id, active: false});
+    if (game.settings.get(GCT.MODULE_NAME, GCT.ENABLE_KEY)) {
+      //Intercept Combat.create() to substitute the Mirror Scene
+      const mirrorScene = await GlobalCombat.getMirrorScene();
+      mergeObject(data, {scene: mirrorScene._id, active: false});
+    }
     return super.create(data, options);
   }
 
@@ -217,9 +220,11 @@ class GlobalCombat extends Combat {
 
   /** @override */
   async delete() {
-    //FIXME: If this is the last combat, also delete the pseudo Scene created (currently it's deleting it every time)
-    const mirrorScene = await GlobalCombat.getMirrorScene();
-    mirrorScene.delete();
+    if (game.settings.get(GCT.MODULE_NAME, GCT.ENABLE_KEY)) {
+      //FIXME: If this is the last combat, also delete the pseudo Scene created (currently it's deleting it every time)
+      const mirrorScene = await GlobalCombat.getMirrorScene();
+      mirrorScene.delete();
+    }
     super.delete();
   }
 
