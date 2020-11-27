@@ -4,7 +4,7 @@ Prototype of synchronizing combat trackers across Scenes in Foundry
 **WARNING**: Back up your world before testing this
 
 * **Author**: Spetzel#0103 (Discord)
-* **Version**: 0.2.0
+* **Version**: 0.2.1
 * **Foundry VTT Compatibility**: 0.6.5-0.7.7
 * **System Compatibility (If applicable)**: N/A
 * **Translation Support**: en
@@ -18,7 +18,7 @@ Run combat across multiple scenes (for example, multi-level houses, chase scenes
 
 # Install
 1. Go to the "Add-on Modules" tab in Foundry Setup
-2. Click "Install Module" and paste this link: `https://raw.githubusercontent.com/spetzel2020/global-combat-tracker/releases/download/0.2.0/module.json`
+2. Click "Install Module" and paste this link: `https://raw.githubusercontent.com/spetzel2020/global-combat-tracker/releases/download/v0.2.1/module.json`
 3. Open your world and go to Settings>Manage Modules and enable **Global Combat Tracker**
 
 # Using Global Combat Tracker

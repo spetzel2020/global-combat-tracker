@@ -1,6 +1,6 @@
 {
   "GCT.id": "global-combat-tracker",
-  "GCT.Version" : "v0.2.0",
+  "GCT.Version" : "v0.2.1",
   "GCT.Name": "Global Combat Tracker",
   "GCT.Setting.Enable.NAME" : "Use Global Combat Tracker by default",
   "GCT.Setting.Enable.HINT": "Use cross-scene Global Combat Tracker; uncheck to return to core Foundry behavior",
