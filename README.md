@@ -18,7 +18,7 @@ Run combat across multiple scenes (for example, multi-level houses, chase scenes
 
 # Install
 1. Go to the "Add-on Modules" tab in Foundry Setup
-2. Click "Install Module" and paste this link: `https://raw.githubusercontent.com/spetzel2020/global-combat-tracker/releases/download/v0.2.1/module.json`
+2. Click "Install Module" and paste this link: `https://github.com/spetzel2020/global-combat-tracker/releases/download/v0.2.1/module.json`
 3. Open your world and go to Settings>Manage Modules and enable **Global Combat Tracker**
 
 # Using Global Combat Tracker
