@@ -10,7 +10,7 @@ Prototype of synchronizing combat trackers across Scenes in Foundry
 
 
 # Description
-Run combat across multiple scenes (for example, multi-level houses, chase scenes, teleportation, or inter-connected dungeon levels.
+Run combat across multiple scenes (for example, multi-level houses, chase scenes, teleportation, or inter-connected dungeon levels).
 
 **Known incompatible modules (turn these off):**
 - GM-Token-Drag-Visibility
