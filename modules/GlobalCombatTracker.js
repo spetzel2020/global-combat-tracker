@@ -207,17 +207,6 @@ class GlobalCombat extends Combat {
   }
 
 
-
-  static async getGC() {
-    //Modeled after TokenLayer.toggleCombat()
-    //There should be a GlobalCombat and GCT created in the sidebar, but if there isn't then create one
-    let globalCombat = ui.combat?.combat;
-    if ( !globalCombat && game.user.isGM ) {
-        globalCombat = await game.combats.object.create({scene: canvas.scene._id, active: true});
-    }
-    return globalCombat;
-  }
-
   /** @override */
   async delete() {
     if (game.settings.get(GCT.MODULE_NAME, GCT.ENABLE_KEY)) {
@@ -248,19 +237,6 @@ class GlobalCombat extends Combat {
     super.createEmbeddedEntity(embeddedName, createData);
   }
 
-  async createTokenInMirrorScene(tokenData, options={}) {
-    //Duplicates Token.create() -> PlaceableObject.create, except for the mirror scene
-    const created = await this.scene.createEmbeddedEntity("Token", tokenData, options);
-    if (!created) {return;}
-
-    //Not clear this is relevant - Scene._onCreateEmbeddedEntity should have not added to the layer because scene is not being viewed
-    if ( created instanceof Array ) {
-      return created.map(c => this.layer?.get(c._id));
-    } else {
-      return this.layer?.get(created._id);
-    }
-  }
-
   getTokenData(tokenId) {
     const gctScene = this.scene;  //actually looks up the stored scene._id
     const foundTokenData = gctScene?.data.tokens?.find(st => st._id === tokenId);  
@@ -268,11 +244,10 @@ class GlobalCombat extends Combat {
   }
 
   static async getMirrorScene() {
-    //Get or create mirror scene
+    //Either retrieve or create a Global Combat Scene for mirroring token positions
     let mirrorScene = game.scenes.find(s => s.name === GCT.MIRROR_SCENE_NAME);
 
     if (!mirrorScene) {
-      //Either retrieve or create a Global Combat Scene for mirroring token positions
       //Modeled on SceneDirectory._onCreate()
       const createData  = {
         name: GCT.MIRROR_SCENE_NAME,
@@ -288,7 +263,7 @@ class GlobalCombat extends Combat {
 
   static async ready() {
     if (!game.user.isGM || !game.settings.get(GCT.MODULE_NAME, GCT.ENABLE_KEY)) {return;}
-    GlobalCombat.getMirrorScene();
+    await GlobalCombat.getMirrorScene();
   }
 
 }//end class GlobalCombat
