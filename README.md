@@ -1,4 +1,4 @@
-# Global Compbat Tracker
+# Global Combat Tracker
 Prototype of synchronizing combat trackers across Scenes in Foundry
 **WARNING**: Back up your world before testing this
 
