@@ -1,32 +1,37 @@
 # Global Compbat Tracker
 Prototype of synchronizing combat trackers across Scenes in Foundry
+**WARNING**: Back up your world before testing this
 
-* **Author**: Spetzel#0103
-* **Version**: 0.1.0
+* **Author**: Spetzel#0103 (Discord)
+* **Version**: 0.2.0
 * **Foundry VTT Compatibility**: 0.6.5-0.7.7
 * **System Compatibility (If applicable)**: N/A
 * **Translation Support**: en
 
 
 # Description
-Keeps your Scene map clean and your encounters simple by saving tokens/Actors into Quick Encounter Journal Entries:
-* Design your encounters by positioning and configuring Hostile tokens, then save the tokens into a Quick Encounter Journal Entry, marked with a single Map Note on the Scene which only you the DM see
-* Run your Quick Encounter by clicking the "Add to Combat Tracker" button; all your saved tokens will be positioned back on the map and added to the Combat Tracker, ready to fight!
-* Run encounters from converted or packaged modules with embedded Actors
-* Easily scale-up encounters by changing "3 Zombies" to "10 Zombies"
-* Similar to the Encounter ability in Fantasy Grounds
-* For Roving Encounters move a single Map Note, not many tokens
-* Save your player tokens at the entrance to a new Scene too!
+Run combat across multiple scenes (for example, multi-level houses, chase scenes, teleportation, or inter-connected dungeon levels.
 
-Quick Encounters works well with [TokenMold](https://github.com/Moerill/token-mold#token-mold) to vary your tokens names, HP, etc (although TokenMold is not required for Quick Encounters). Quick Encounters also previews the XP for each group of hostiles if using dnd5e)
+**Known incompatible modules (turn these off):**
+- GM-Token-Drag-Visibility
 
 # Install
 1. Go to the "Add-on Modules" tab in Foundry Setup
-2. Click "Install Module" and search for **Global Combat Tracker** OR paste this link: `https://raw.githubusercontent.com/spetzel2020/global-combat-tracker/0.1.0/module.json`
-3. Open your world and go to Settings>Manage Modules and enable Global Combat Tracker
+2. Click "Install Module" and paste this link: `https://raw.githubusercontent.com/spetzel2020/global-combat-tracker/releases/download/0.2.0/module.json`
+3. Open your world and go to Settings>Manage Modules and enable **Global Combat Tracker**
 
 # Using Global Combat Tracker
+1. Open the Global Combat Tracker (GCT) by clicking in the Sidebar or right-clicking the Combat icon; you should see the normal Combat Tracker except with **Global Combat Tracker** in the title bar
+2. Pick a token and toggle-combat to add it to the GCT
+3. Switch Scenes; at this point the normal Combat Tracker would be blank, but GCT retains the existing tokens
+4. Add more tokens in the same way to the GCT
+5. Click Begin Combat, roll initiative, do the normal combat things
+6. You can click on a combatant to move to the scene and location of the token you added
 
+## Things to notice/watch for:
+- GCT adds a mirror Scene called **GCT Mirror Scene**; this should be automatically deleted when you delete all combats
+- GCT may interact badly with other modules that expect the Combat Tracker to be linked to one (real) scene; please open an Issue or DM me on Discord
+- Remember I told you to back up your world!
 
 ## Contributions
 *Coming Soon!*
