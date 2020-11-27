@@ -3,7 +3,7 @@
   "title": "Global Combat Tracker",
   "description" : "<p>Synchronize combat trackers across scenes for seamless combat in multi-Scene encounters, levels, or chases</p>",
   "author" : "Spetzel",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "minimumCoreVersion": "0.6.5",
   "compatibleCoreVersion": "0.7.7",
   "languages": [{
@@ -14,10 +14,10 @@
   "esmodules" : ["modules/GlobalCombatTracker.js"
   ],
   "styles": ["css/quick-encounters.css"],
-  "readme": "https://github.com/spetzel2020/global-combat-tracker/blob/v0.1.0/README.md",
+  "readme": "https://github.com/spetzel2020/global-combat-tracker/blob/v0.2.0/README.md",
   "bugs": "https://github.com/spetzel2020/global-combat-tracker/issues",
-  "changelog": "https://github.com/spetzel2020/global-combat-tracker/blob/v0.1.0/CHANGELOG.md",
-  "manifest": "https://raw.githubusercontent.com/spetzel2020/global-combat-tracker/v0.1.0/module.json",
-  "download": "https://github.com/spetzel2020/global-combat-tracker/archive/v0.1.0.zip",
+  "changelog": "https://github.com/spetzel2020/global-combat-tracker/blob/v0.2.0/CHANGELOG.md",
+  "manifest": "https://raw.githubusercontent.com/spetzel2020/global-combat-tracker/releases/download/v0.2.0/module.json",
+  "download": "https://github.com/spetzel2020/global-combat-tracker/releases/download/v0.2.0.zip",
   "url": "https://github.com/spetzel2020/global-combat-tracker"
 }
