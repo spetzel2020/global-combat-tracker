@@ -1,5 +1,6 @@
 # Global Combat Tracker
 Prototype of synchronizing combat trackers across Scenes in Foundry
+
 **WARNING**: Back up your world before testing this
 
 * **Author**: Spetzel#0103 (Discord)
