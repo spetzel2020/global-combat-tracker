@@ -1,5 +1,5 @@
 # Global Combat Tracker
-Prototype of synchronizing combat trackers across Scenes in Foundry
+Prototype of a cross-Scene Combat Tracker
 
 **WARNING**: Back up your world before testing this
 
@@ -8,7 +8,6 @@ Prototype of synchronizing combat trackers across Scenes in Foundry
 * **Foundry VTT Compatibility**: 0.6.5-0.7.7
 * **System Compatibility (If applicable)**: N/A
 * **Translation Support**: en
-
 
 # Description
 Run combat across multiple scenes (for example, multi-level houses, chase scenes, teleportation, or inter-connected dungeon levels).
